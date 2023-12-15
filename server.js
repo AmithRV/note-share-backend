@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(cors());
 app.options('*', cors());
 
-const messageArray = [];
+let messageArray = [];
 
 const pusher = new Pusher({
   appId: '1481829',
@@ -23,6 +23,7 @@ const pusher = new Pusher({
 app.post('/api/send-message', (req, res) => {
   const message = req.body;
   pusher.trigger('messages', 'inserted', {
+    type: 'add-message',
     message: message?.content,
   });
 
@@ -32,6 +33,17 @@ app.post('/api/send-message', (req, res) => {
 
 app.get('/api/list-messages', (req, res) => {
   res.status(200).send(messageArray);
+});
+
+app.post('/api/flush', (req, res) => {
+  const message = req.body;
+  pusher.trigger('messages', 'inserted', {
+    type: 'flush',
+    message: message?.content,
+  });
+
+  messageArray = [];
+  res.status(201).send(messageArray);
 });
 
 app.listen(port, () => {
